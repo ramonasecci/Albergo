@@ -1,0 +1,64 @@
+﻿@model Albergo.Models.Prenotazione
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<h2>Checkout Details</h2>
+
+<div>
+    <p>Prenotazione ID:</p>
+    <p>@Model.Prenotazione_ID</p>
+
+
+
+    @if (Model.Ospite != null)
+    {
+
+        <p>@Model.Ospite.Nome</p>
+        <p>@Model.Ospite.Cognome</p>
+
+    }
+    else
+    {
+        <p>Camera details not available</p>
+    }
+
+
+    @if (Model.Camera != null)
+    {
+        <p>Camera Numero:</p>
+        <p>@Model.Camera.Numero</p>
+    }
+    else
+    {
+        <p>Camera details not available</p>
+    }
+
+
+    <p>Data Arrivo:</p>
+    <p>@Model.Data_Arrivo.ToShortDateString()</p>
+
+    <p>Data Partenza:</p>
+    <p>@Model.Data_Partenza.ToShortDateString()</p>
+
+    @if (Model.Checkout != null)
+    {
+        <p>Notti:</p>
+        <p>@Model.Checkout.Notti</p>
+
+        <p>Totale Servizi:</p>
+        <p>@Model.Checkout.TotServizi.ToString("C")</p>
+
+        <p>Totale Prenotazione:</p>
+        <p>@Model.Checkout.TotPren.ToString("C")</p>
+    }
+    else
+    {
+        <p>Checkout details not available</p>
+    }
+
+</div>
+
+
