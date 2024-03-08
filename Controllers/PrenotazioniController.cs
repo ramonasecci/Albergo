@@ -91,7 +91,7 @@ namespace Albergo.Controllers
                 {
                     reader.Read();
 
-                    // Calcola il numero di notti
+                    // Calcola il numero di notti (checkin chekout)
                     DateTime dataPartenza = (DateTime)reader["Data_Partenza"];
                     DateTime dataArrivo = (DateTime)reader["Data_Arrivo"];
                     TimeSpan difference = dataPartenza - dataArrivo;
