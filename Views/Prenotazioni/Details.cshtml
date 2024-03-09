@@ -39,8 +39,17 @@
                     <h3>Lista servizi acquistati</h3>
                     foreach (var servizio in servizi)
                     {
-                        <div>
-                            <p>@servizio.Servizio.Tipo</p><p>@servizio.Data_Serv</p><p>@servizio.Quantita</p><p>@(servizio.PrezzoServ)€</p>
+                        <div class="card mb-3 border-0">
+                            <div class="card-body d-flex justify-content-between">
+                                <div>
+                                    <p class="mb-0"><strong>Tipo:</strong> @servizio.Servizio.Tipo</p>
+                                    <p class="mb-0"><strong>Data:</strong> @servizio.Data_Serv.ToShortDateString()</p>
+                                </div>
+                                <div>
+                                    <p class="mb-0"><strong>Quantità:</strong> @servizio.Quantita</p>
+                                    <p class="mb-0"><strong>Prezzo:</strong> @(servizio.PrezzoServ)€</p>
+                                </div>
+                            </div>
                         </div>
 
                     }

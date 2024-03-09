@@ -173,7 +173,7 @@ namespace Albergo.Controllers
                         servizio.Tipo = (string)listaservizi["Tipo"];
                         lista.Add(servizio);
                     }
-                    ViewBag.ServiziPrenotati = lista;
+                    TempData["ServiziOspite"] = servizi;
                     listaservizi.Close();
                 }
 
@@ -264,7 +264,9 @@ namespace Albergo.Controllers
                         servizio.Data_Serv = (DateTime)readerServizi["Data_Serv"];
                         servizio.Quantita = (int)readerServizi["Quantita"];
                         servizio.PrezzoServ = (decimal)readerServizi["PrezzoServ"];
-                        servizio.Servizio = new Servizio { Tipo = readerServizi["Tipo"].ToString() };
+                        servizio.Servizio = new Servizio { 
+                            Servizio_ID = (int)readerServizi["Servizio_ID"],
+                            Tipo = readerServizi["Tipo"].ToString() };
                         servizi.Add(servizio);
                     }
                     readerServizi.Close();
@@ -284,7 +286,7 @@ namespace Albergo.Controllers
                     TotPren = totalePrenotazione
                 };
 
-                TempData["ServiziOspite"] = servizi;
+                
 
 
 
