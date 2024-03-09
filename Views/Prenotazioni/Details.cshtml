@@ -1,7 +1,7 @@
 ﻿@model Albergo.Models.Prenotazione
 @{
     ViewBag.Title = "Details";
-    var servizi = TempData["ServiziOspite"] as List<Albergo.Models.Servizio>;
+    var servizi = TempData["ServiziOspite"] as List<Albergo.Models.PS>;
 }
 
 <div class="container mt-4">
@@ -33,6 +33,20 @@
                 {
                     <p class="mb-2 text-muted"><em>Dettagli della camera non disponibili</em></p>
                 }
+
+                @if (servizi != null)
+                {
+                    <h3>Lista servizi acquistati</h3>
+                    foreach (var servizio in servizi)
+                    {
+                        <div>
+                            <p>@servizio.Servizio.Tipo</p><p>@servizio.Data_Serv</p><p>@servizio.Quantita</p><p>@(servizio.PrezzoServ)€</p>
+                        </div>
+
+                    }
+
+                }
+
 
 
 

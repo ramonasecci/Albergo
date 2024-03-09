@@ -268,7 +268,7 @@ namespace Albergo.Controllers
                         servizi.Add(servizio);
                     }
                     readerServizi.Close();
-                    TempData["ServiziOspite"] = servizi;
+                    
                 }
                 foreach (var servizio in servizi)
                 {
@@ -284,7 +284,9 @@ namespace Albergo.Controllers
                     TotPren = totalePrenotazione
                 };
 
-               
+                TempData["ServiziOspite"] = servizi;
+
+
 
             }
             catch (Exception ex)
