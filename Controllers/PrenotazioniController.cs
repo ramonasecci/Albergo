@@ -1,5 +1,6 @@
 ﻿using Albergo.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -157,10 +158,28 @@ namespace Albergo.Controllers
                     TotServizi = TotServizi,
                     TotPren = totalePrenotazione
                 };
+
+                List<Servizio> lista = new List<Servizio>();
+                var cmd = new SqlCommand("SELECT * FROM Servizi", Db.conn);
+                var listaservizi = cmd.ExecuteReader();
+
+                if (listaservizi.HasRows)
+                {
+                    while (listaservizi.Read())
+                    {
+                        var servizio = new Servizio();
+                        servizio.Servizio_ID = (int)listaservizi["Servizio_ID"];
+                        servizio.Tipo = (string)listaservizi["Tipo"];
+                        lista.Add(servizio);
+                    }
+                    ViewBag.ServiziPrenotati = lista;
+                    listaservizi.Close();
+                }
+
             }
-            catch 
+            catch (Exception ex)
             {
-                
+                Console.WriteLine(ex.Message);
             }
             finally
             {
@@ -170,11 +189,105 @@ namespace Albergo.Controllers
             return View(pren);
         }
 
+        [HttpPost]
+        public ActionResult AddServizi(PS ps)
+        {
+            try
+            {
 
 
+                Db.conn.Open();
 
+                var cmd = new SqlCommand(@"INSERT INTO PS
+                                        (Prenotazione_ID, Servizio_ID, Data_Serv, Quantita, PrezzoServ)
+                                          VALUES
+                                          (@prenotazione_id, @servizio_id, @data_serv, @quantita, @prezzoserv)", Db.conn);
 
+                cmd.Parameters.AddWithValue("@prenotazione_id", ps.Prenotazione_ID);
+                cmd.Parameters.AddWithValue("@servizio_id", ps.Servizio_ID);
+                cmd.Parameters.AddWithValue("@data_serv", ps.Data_Serv);
+                cmd.Parameters.AddWithValue("@quantita", ps.Quantita);
+                cmd.Parameters.AddWithValue("@prezzoserv", ps.PrezzoServ);
 
+                cmd.ExecuteNonQuery();
+
+                return RedirectToAction("Index");
+
+            }
+            catch (Exception ex)
+            {
+                return View(ex.Message);
+            }
+            finally
+            {
+                Db.conn.Close();
+            }
+        }
+        [HttpGet]
+        [Authorize]
+        public ActionResult AddPren()
+        {
+            try
+            {
+                Db.conn.Open();
+
+                // Popola la lista dei servizi e imposta ViewBag.Servizi
+                List<Servizio> listaServizi = new List<Servizio>();
+                var cmdServizi = new SqlCommand("SELECT * FROM Servizi", Db.conn);
+                var readerServizi = cmdServizi.ExecuteReader();
+                while (readerServizi.Read())
+                {
+                    var servizio = new Servizio();
+                    servizio.Servizio_ID = (int)readerServizi["Servizio_ID"];
+                    servizio.Tipo = (string)readerServizi["Tipo"];
+                    listaServizi.Add(servizio);
+                }
+                ViewBag.Servizi = listaServizi;
+                readerServizi.Close();
+
+                // Popola la lista delle pensioni e imposta ViewBag.Pensioni
+                List<Pensione> listaPensioni = new List<Pensione>();
+                var cmdPensioni = new SqlCommand("SELECT * FROM Pensioni", Db.conn);
+                var readerPensioni = cmdPensioni.ExecuteReader();
+                while (readerPensioni.Read())
+                {
+                    var pensione = new Pensione();
+                    pensione.Pensione_ID = (int)readerPensioni["Pensione_ID"];
+                    pensione.Tipo = (string)readerPensioni["Tipo"];
+                    pensione.Supplemento = (decimal)readerPensioni["Supplemento"];
+                    listaPensioni.Add(pensione);
+                }
+                ViewBag.Pensioni = listaPensioni;
+                readerPensioni.Close();
+
+                // Popola la lista delle camere e imposta ViewBag.Camere
+                List<Camera> listaCamere = new List<Camera>();
+                var cmdCamere = new SqlCommand("SELECT * FROM Camere", Db.conn);
+                var readerCamere = cmdCamere.ExecuteReader();
+                while (readerCamere.Read())
+                {
+                    var camera = new Camera();
+                    camera.Camera_ID = (int)readerCamere["Camera_ID"];
+                    camera.Numero = (int)readerCamere["Numero"];
+                    camera.Descrizione = (string)readerCamere["Descrizione"];
+                    camera.Categoria_ID = (int)readerCamere["Categoria_ID"];
+                    listaCamere.Add(camera);
+                }
+                ViewBag.Camere = listaCamere;
+                readerCamere.Close();
+            }
+            catch (Exception ex)
+            {
+                // Gestisci l'eccezione appropriatamente, come registrare o visualizzare un messaggio di errore
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                Db.conn.Close();
+            }
+
+            return View();
+        }
 
 
 
@@ -182,6 +295,15 @@ namespace Albergo.Controllers
 
 
     }
-
-
 }
+
+
+
+
+
+
+
+
+
+
+

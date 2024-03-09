@@ -37,7 +37,7 @@
                 <td>@prenotazione.Pensione.Tipo</td>
                 <td class="d-flex">
                     @Html.ActionLink( "Dettaglio","Details", "Prenotazioni", new { id = prenotazione.Prenotazione_ID }, new { @class = "btn btn-outline-info me-2" })
-                    @Html.ActionLink("Aggiungi servizi", "AddServizi", "Prenotazioni", new { id = prenotazione.Prenotazione_ID }, new { @class = "btn btn-outline-warning" })
+                    @Html.ActionLink("Aggiungi servizi", "Details", "Prenotazioni", new { id = prenotazione.Prenotazione_ID }, new { @class = "btn btn-outline-warning" })
                 </td>
             </tr>
         }

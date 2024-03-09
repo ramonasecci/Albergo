@@ -192,6 +192,7 @@
     <Content Include="Views\Login\Index.cshtml" />
     <Content Include="Views\Prenotazioni\Index.cshtml" />
     <Content Include="Views\Prenotazioni\Details.cshtml" />
+    <Content Include="Views\Prenotazioni\AddPren.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
