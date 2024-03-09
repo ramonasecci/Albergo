@@ -1,0 +1,110 @@
+﻿﻿@model Albergo.Models.Prenotazione
+@{
+    ViewBag.Title = "AddServizi";
+    var servizi = TempData["Servizi"] as List<Albergo.Models.Servizio>;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+           
+            <h2 class="mt-4">Details</h2>
+
+            <div class="mt-3">
+                <p><strong>Prenotazione ID:</strong> @Model.Prenotazione_ID</p>
+
+                @if (Model.Ospite != null)
+                {
+                    <p><strong>Nome:</strong> @Model.Ospite.Nome</p>
+                    <p><strong>Cognome:</strong> @Model.Ospite.Cognome</p>
+                }
+                else
+                {
+                    <p><em>Dettagli della camera non disponibili</em></p>
+                }
+
+                @if (Model.Camera != null)
+                {
+                    <p><strong>Camera Numero:</strong> @Model.Camera.Numero</p>
+                }
+                else
+                {
+                    <p><em>Dettagli della camera non disponibili</em></p>
+                }
+
+                <p><strong>Data Arrivo:</strong> @Model.Data_Arrivo.ToShortDateString()</p>
+                <p><strong>Data Partenza:</strong> @Model.Data_Partenza.ToShortDateString()</p>
+
+                @if (Model.Checkout != null)
+                {
+                    <p><strong>Notti:</strong> @Model.Checkout.Notti</p>
+                    <p><strong>Totale Servizi:</strong> @Model.Checkout.TotServizi.ToString("C")</p>
+                    <p><strong>Totale Prenotazione:</strong> @Model.Checkout.TotPren.ToString("C")</p>
+                }
+                else
+                {
+                    <p><em>Dettagli del checkout non disponibili</em></p>
+                }
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <h2 class="mt-4">Aggiungi Servizi</h2>
+            <form method="post" action="@Url.Action("AddServizi", "Prenotazioni")" class="mt-3">
+                <input type="hidden" id="Prenotazione_ID" name="Prenotazione_ID" value="@Model.Prenotazione_ID">
+                <input type="hidden" id="selectedServizio_ID" name="selectedServizio_ID" value="">
+                <div class="form-group">
+
+                    @if (servizi != null)
+                    {
+                        <label for="Servizio_ID"><strong>Servizio:</strong></label>
+                        <select id="Servizio_ID" name="Servizio_ID" class="form-control" onchange="updateSelectedServizioID(this)">
+                            @foreach (var servizio in servizi)
+                            {
+                                <option value="@servizio.Servizio_ID">@servizio.Tipo</option>
+                            }
+                        </select>
+
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label for="Data_Serv"><strong>Data Servizio:</strong></label>
+                    <input type="date" id="Data_Serv" name="Data_Serv" class="form-control" min="@Model.Data_Arrivo.ToString("yyyy-MM-dd")" max="@Model.Data_Partenza.ToString("yyyy-MM-dd")" onchange="filterDates()">
+                </div>
+
+                <div class="form-group">
+                    <label for="Quantita"><strong>Quantita:</strong></label>
+                    <input type="number" id="Quantita" name="Quantita" class="form-control" min="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="PrezzoServ"><strong>Prezzo Servizio:</strong></label>
+                    <input type="text" id="PrezzoServ" name="PrezzoServ" class="form-control">
+                </div>
+
+                <button class="btn btn-outline-success m-3" type="submit">Aggiungi</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    function updateSelectedServizioID(selectElement) {
+        var selectedServizioID = selectElement.value;
+        document.getElementById("selectedServizio_ID").value = selectedServizioID;
+    }
+</script>
+
+
+<script>
+    function filterDates() {
+        var dataArrivo = new Date('@Model.Data_Arrivo.ToString("yyyy-MM-dd")');
+        var dataPartenza = new Date('@Model.Data_Partenza.ToString("yyyy-MM-dd")');
+        var dataServInput = document.getElementById("Data_Serv");
+        var dataServ = new Date(dataServInput.value);
+
+        if (dataServ < dataArrivo || dataServ > dataPartenza) {
+            dataServInput.value = '';
+        }
+    }
+</script>

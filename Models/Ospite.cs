@@ -51,7 +51,10 @@ namespace Albergo.Models
         [StringLength(16, MinimumLength = 16, ErrorMessage = "Il codice fiscale deve avere 16 caratteri")]
         public string Cod_Fisc { get; set; }
 
-
+        public string NomeCompletoCodFisc
+        {
+            get { return $"{Nome} {Cognome} - {Cod_Fisc}"; }
+        }
 
 
 

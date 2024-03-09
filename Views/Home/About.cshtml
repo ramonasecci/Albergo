@@ -1,9 +1,53 @@
-﻿@{
-    ViewBag.Title = "About";
-}
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-    <h3>@ViewBag.Message</h3>
+﻿﻿<main aria-labelledby="title">
+    <h2 id="title" class="invisible">@ViewBag.Title</h2>
+    <h3 class="invisible">@ViewBag.Message</h3>
 
-    <p>Use this area to provide additional information.</p>
+    <h1>Ricarca ospite per codice fiscale</h1>
+    
+        
+        
+        <div class="d-flex align-items-center justify-content-around">
+            <div>
+                <label for="codFiscInput" class="form-label">Codice Fiscale:</label>
+                <input type="text" id="codFiscInput" name="codFiscInput" placeholder="Inserisci il codice fiscale" class="form-control">
+
+                <div class="d-flex align-items-center">
+
+                    <button id="fetchDataButton" class="btn btn-secondary m-3">Ricerca</button>
+                </div>
+
+            </div>
+          
+
+
+            <div id="spedizioni-container"></div>
+         </div>
+            <script>
+                document.getElementById('fetchDataButton').addEventListener('click', function () {
+                    const codFisc = document.getElementById('codFiscInput').value; // Assumi un input con id 'codFiscInput' per inserire il codice fiscale
+                    fetch('/Prenotazioni/GetCliente?codFisc=' + codFisc)
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById('spedizioni-container').innerHTML = ''; // Pulisci il contenuto precedente
+                            data.forEach(spedizione => {
+                                const div = document.createElement('div');
+                                div.innerHTML = `
+                                        <h3>Ospite ID: ${spedizione.Ospite_ID}</h3>
+                                        <p>Nome: ${spedizione.Nome}</p>
+                                        <p>Cognome: ${spedizione.Cognome}</p>
+                                        <p>Città: ${spedizione.Citta}</p>
+                                        <p>Provincia: ${spedizione.Provincia}</p>
+                                        <p>Email: ${spedizione.Email}</p>
+                                        <p>Telefono: ${spedizione.Telefono}</p>
+                                        <p>Codice Fiscale: ${spedizione.Cod_Fisc}</p>
+                                    `;
+                                document.getElementById('spedizioni-container').appendChild(div);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Si è verificato un errore durante la richiesta:', error);
+                        });
+                });
+
+            </script>
 </main>

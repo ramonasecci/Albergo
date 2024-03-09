@@ -144,6 +144,7 @@ namespace Albergo.Controllers
                         servizi.Add(servizio);
                     }
                     readerServizi.Close();
+                    
                 }
                 foreach (var servizio in servizi)
                 {
@@ -189,6 +190,145 @@ namespace Albergo.Controllers
             return View(pren);
         }
 
+
+        [Authorize]
+        [HttpGet]
+        public ActionResult AddServizi(int id)
+        {
+            var pren = new Prenotazione();
+            List<PS> servizi = new List<PS>();
+            decimal TotServizi = 0;
+            int nottiN = 0;
+
+            try
+            {
+                Db.conn.Open();
+                var command = new SqlCommand(@"SELECT *, o.Nome AS NomeOspite, o.Cognome AS CognomeOspite
+                FROM Prenotazioni AS p
+                JOIN Pensioni AS pe ON pe.Pensione_ID = p.Pensione_ID
+                JOIN Camere AS c ON c.Camera_ID = p.Camera_ID
+                JOIN Camere AS cam ON cam.Camera_ID = p.Camera_ID
+                JOIN Categorie AS cat ON cat.Categoria_ID = cam.Categoria_ID
+                JOIN Ospiti AS o ON o.Ospite_ID = p.Ospite_ID
+                WHERE Prenotazione_ID=@id", Db.conn);
+                command.Parameters.AddWithValue("id", id);
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    reader.Read();
+                    // Calcola il numero di notti
+                    DateTime dataPartenza = (DateTime)reader["Data_Partenza"];
+                    DateTime dataArrivo = (DateTime)reader["Data_Arrivo"];
+                    TimeSpan difference = dataPartenza - dataArrivo;
+                    nottiN = difference.Days;
+
+                    pren.Prenotazione_ID = (int)reader["Prenotazione_ID"];
+                    pren.Ospite = new Ospite
+                    {
+                        Nome = reader["Nome"].ToString(),
+                        Cognome = reader["Cognome"].ToString()
+                    };
+
+                    pren.Camera = new Camera
+                    {
+                        Numero = (int)reader["Numero"],
+                        Categoria = new Categoria
+                        {
+                            Caparra = (decimal)reader["Caparra"],
+                            TariffaNotte = (decimal)reader["TariffaNotte"]
+
+                        }
+                    };
+
+                    pren.Data_Arrivo = (DateTime)reader["Data_Arrivo"];
+                    pren.Data_Partenza = (DateTime)reader["Data_Partenza"];
+                    pren.Pensione = new Pensione
+                    {
+                        Tipo = reader["Tipo"].ToString(),
+                        Supplemento = (decimal)reader["Supplemento"]
+                    };
+                }
+                reader.Close();
+
+                var comServizi = new SqlCommand(@"SELECT *
+                                         FROM PS as p
+                                         JOIN Servizi as s ON s.Servizio_ID = p.Servizio_ID
+                                         WHERE p.Prenotazione_ID=@id", Db.conn);
+                comServizi.Parameters.AddWithValue("@id", id);
+                var readerServizi = comServizi.ExecuteReader();
+                if (readerServizi.HasRows)
+                {
+                    while (readerServizi.Read())
+                    {
+                        var servizio = new PS();
+                        servizio.Data_Serv = (DateTime)readerServizi["Data_Serv"];
+                        servizio.Quantita = (int)readerServizi["Quantita"];
+                        servizio.PrezzoServ = (decimal)readerServizi["PrezzoServ"];
+                        servizio.Servizio = new Servizio { Tipo = readerServizi["Tipo"].ToString() };
+                        servizi.Add(servizio);
+                    }
+                    readerServizi.Close();
+                }
+                foreach (var servizio in servizi)
+                {
+                    TotServizi += servizio.PrezzoServ;
+                }
+
+                var totalePrenotazione = ((pren.Camera.Categoria.TariffaNotte + pren.Pensione.Supplemento) * nottiN) - pren.Camera.Categoria.Caparra + TotServizi;
+
+                pren.Checkout = new Checkout
+                {
+                    Notti = nottiN,
+                    TotServizi = TotServizi,
+                    TotPren = totalePrenotazione
+                };
+
+               
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                Db.conn.Close();
+            }
+
+            try
+            {
+                Db.conn.Open();
+                List<Servizio> lista = new List<Servizio>();
+                var cmd = new SqlCommand("SELECT * FROM Servizi", Db.conn);
+                var listaservizi = cmd.ExecuteReader();
+
+                if (listaservizi.HasRows)
+                {
+                    while (listaservizi.Read())
+                    {
+                        var servizio = new Servizio();
+                        servizio.Servizio_ID = (int)listaservizi["Servizio_ID"];
+                        servizio.Tipo = (string)listaservizi["Tipo"];
+                        lista.Add(servizio);
+                    }
+                    TempData["Servizi"] = lista;
+                    listaservizi.Close();
+                }
+            }
+            catch { }
+            finally
+            {
+                Db.conn.Close();
+            }
+
+
+
+
+
+            return View(pren);
+        }
+
+
         [HttpPost]
         public ActionResult AddServizi(PS ps)
         {
@@ -223,6 +363,9 @@ namespace Albergo.Controllers
                 Db.conn.Close();
             }
         }
+
+
+
         [HttpGet]
         [Authorize]
         public ActionResult AddPren()
@@ -275,6 +418,27 @@ namespace Albergo.Controllers
                 }
                 ViewBag.Camere = listaCamere;
                 readerCamere.Close();
+
+                // Popola la lista degli ospiti e imposta ViewBag.Ospiti
+                List<Ospite> listaOspiti = new List<Ospite>();
+                var cmdOspite = new SqlCommand("SELECT * FROM Ospiti", Db.conn);
+                var readerOspiti = cmdOspite.ExecuteReader();
+                while (readerOspiti.Read())
+                {
+                    var ospite = new Ospite();
+                    ospite.Ospite_ID = (int)readerOspiti["Ospite_ID"];
+                    ospite.Nome = (string)readerOspiti["Nome"];
+                    ospite.Cognome = (string)readerOspiti["Cognome"];
+                    ospite.Citta = (string)readerOspiti["Citta"];
+                    ospite.Provincia = (string)readerOspiti["Provincia"];
+                    ospite.Email = (string)readerOspiti["Email"];
+                    ospite.Telefono = (string)readerOspiti["Telefono"];
+                    ospite.Cod_Fisc = (string)readerOspiti["Cod_Fisc"];
+                    listaOspiti.Add(ospite);
+                }
+
+                ViewBag.Ospiti = listaOspiti;
+                readerOspiti.Close();
             }
             catch (Exception ex)
             {
@@ -287,6 +451,129 @@ namespace Albergo.Controllers
             }
 
             return View();
+        }
+
+        [HttpPost]
+        public ActionResult AddPren(Prenotazione pren)
+        {
+            try
+            {
+                Db.conn.Open();
+                var cmdPren = new SqlCommand(@"INSERT INTO Prenotazioni 
+                            (Data_Pren, Data_Arrivo, Data_Partenza, Pensione_ID, Ospite_ID, Camera_ID)
+                            VALUES(@data_pren, @data_arrivo, @data_partenza, @pensione_id, @ospite_id, @camera_id);
+                            SELECT SCOPE_IDENTITY();", Db.conn);
+                cmdPren.Parameters.AddWithValue("@data_pren", pren.Data_Pren);
+                cmdPren.Parameters.AddWithValue("@data_arrivo", pren.Data_Arrivo);
+                cmdPren.Parameters.AddWithValue("@data_partenza", pren.Data_Partenza);
+                cmdPren.Parameters.AddWithValue("@pensione_id", pren.Pensione_ID);
+                cmdPren.Parameters.AddWithValue("@ospite_id", pren.Ospite_ID);
+                cmdPren.Parameters.AddWithValue("@camera_id", pren.Camera_ID);
+                int lastInsertedId = Convert.ToInt32(cmdPren.ExecuteScalar());
+                if (lastInsertedId != 0)
+                {
+                    return RedirectToAction("Details", new { id = lastInsertedId });
+                }
+                else
+                {
+                    return View();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Gestisci l'eccezione in modo appropriato, come registrare o visualizzare un messaggio di errore
+                Console.WriteLine(ex.Message);
+                return View();
+            }
+            finally
+            {
+                Db.conn.Close();
+            }
+        }
+
+        //jsonresult ricerca per codice fiscale
+        public JsonResult GetCliente(string codFisc)
+        {
+            List<Ospite> prenotazioni = new List<Ospite>();
+
+            try
+            {
+                Db.conn.Open();
+
+                var cmd = new SqlCommand("SELECT * FROM Ospiti WHERE Cod_Fisc = @cod", Db.conn);
+                cmd.Parameters.AddWithValue("@cod", codFisc);
+                var reader = cmd.ExecuteReader();
+
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        var prenotazione = new Ospite()
+                        {
+                            Ospite_ID = (int)reader["Ospite_ID"],
+                            Nome = (string)reader["Nome"],
+                            Cognome = (string)reader["Cognome"],
+                            Citta = (string)reader["Citta"],
+                            Provincia = (string)reader["Provincia"],
+                            Email = (string)reader["Email"],
+                            Telefono = (string)reader["Telefono"],
+                            Cod_Fisc = (string)reader["Cod_Fisc"],
+                        };
+
+                        prenotazioni.Add(prenotazione);
+                    }
+
+                    reader.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = ex.Message });
+            }
+            finally
+            {
+                Db.conn.Close();
+            }
+
+            return Json(prenotazioni, JsonRequestBehavior.AllowGet);
+        }
+     
+        public JsonResult GetPensioneCompleta()
+        {
+            try
+            {
+                Db.conn.Open();
+
+                var cmd = new SqlCommand("SELECT COUNT(*) FROM Prenotazioni WHERE Pensione_ID = @id", Db.conn);
+                cmd.Parameters.AddWithValue("@id", 1);
+                var reader = cmd.ExecuteReader();
+
+                int count = 0;
+                if (reader.Read())
+                {
+                    count = (int)reader[0];
+                }
+
+                // Creare un oggetto anonimo per contenere il conteggio
+                var result = new
+                {
+                    NumeroPrenotazioni = count
+                };
+
+                // Aggiungi un log per vedere il valore del conteggio
+                Console.WriteLine("Numero di prenotazioni trovate: " + count);
+
+                return Json(result, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                // Se si verifica un'eccezione, restituisci un messaggio di errore
+                return Json(new { error = "Si è verificato un errore: " + ex.Message });
+            }
+            finally
+            {
+                Db.conn.Close();
+            }
         }
 
 

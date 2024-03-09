@@ -20,11 +20,12 @@
                 <ul class="navbar-nav flex-grow-1">
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <li>@Html.ActionLink("Aggiongi Prenotazione", "AddPren", "Prenotazioni", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("Informazioni", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                        <li>@Html.ActionLink("Contatto", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li>@Html.ActionLink("Aggiungi Prenotazione", "AddPren", "Prenotazioni", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li>@Html.ActionLink("Aggiungi Ospite", "Index", "Ospiti", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li>@Html.ActionLink("Ricerca Ospite", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li>@Html.ActionLink("Prenotazioni Pensione Completa", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
                     }
-                  </ul>
+                </ul>
                 <ul class="navbar-nav text-white">
                     @if (User.Identity.IsAuthenticated)
                     {
