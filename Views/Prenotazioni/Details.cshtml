@@ -1,6 +1,7 @@
 ﻿@model Albergo.Models.Prenotazione
 @{
     ViewBag.Title = "Details";
+    var servizi = TempData["ServiziOspite"] as List<Albergo.Models.Servizio>;
 }
 
 <div class="container mt-4">
@@ -32,6 +33,10 @@
                 {
                     <p class="mb-2 text-muted"><em>Dettagli della camera non disponibili</em></p>
                 }
+
+
+
+
             </div>
 
             <div class="col-md-6">
